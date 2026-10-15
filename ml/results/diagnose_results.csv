@@ -1,0 +1,9 @@
+variant,cv_scheme,model,roc_auc,pr_auc
+as is,time-ordered (5 folds),LogisticRegression,0.525 +/- 0.100,0.088 +/- 0.058
+as is,time-ordered (5 folds),RandomForest,0.570 +/- 0.129,0.101 +/- 0.045
+as is,shuffled (5 folds x 3),LogisticRegression,0.658 +/- 0.063,0.167 +/- 0.059
+as is,shuffled (5 folds x 3),RandomForest,0.739 +/- 0.073,0.220 +/- 0.076
+capped +/-5,time-ordered (5 folds),LogisticRegression,0.540 +/- 0.112,0.088 +/- 0.040
+capped +/-5,time-ordered (5 folds),RandomForest,0.564 +/- 0.139,0.101 +/- 0.048
+capped +/-5,shuffled (5 folds x 3),LogisticRegression,0.669 +/- 0.070,0.176 +/- 0.068
+capped +/-5,shuffled (5 folds x 3),RandomForest,0.740 +/- 0.071,0.219 +/- 0.073

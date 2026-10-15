@@ -1,0 +1,151 @@
+feature,reason,missing_pct_train
+feature_5,constant,0.56
+feature_13,constant,0.0
+feature_42,constant,0.08
+feature_49,constant,0.08
+feature_52,constant,0.08
+feature_69,constant,0.48
+feature_74,constant,0.48
+feature_97,constant,0.48
+feature_141,constant,0.56
+feature_149,constant,0.0
+feature_178,constant,1.92
+feature_179,constant,0.08
+feature_186,constant,0.08
+feature_189,constant,0.08
+feature_190,constant,0.32
+feature_191,constant,0.32
+feature_192,constant,0.32
+feature_193,constant,0.32
+feature_194,constant,0.32
+feature_206,constant,0.48
+feature_209,constant,0.48
+feature_226,constant,0.48
+feature_229,constant,0.48
+feature_230,constant,0.48
+feature_231,constant,0.48
+feature_232,constant,0.48
+feature_233,constant,0.48
+feature_234,constant,0.48
+feature_235,constant,0.48
+feature_236,constant,0.48
+feature_237,constant,0.48
+feature_240,constant,0.48
+feature_241,constant,0.48
+feature_242,constant,0.48
+feature_243,constant,0.48
+feature_256,constant,0.48
+feature_257,constant,0.48
+feature_258,constant,0.48
+feature_259,constant,0.48
+feature_260,constant,0.48
+feature_261,constant,0.48
+feature_262,constant,0.48
+feature_263,constant,0.48
+feature_264,constant,0.48
+feature_265,constant,0.48
+feature_266,constant,0.48
+feature_276,constant,0.56
+feature_284,constant,0.0
+feature_313,constant,1.92
+feature_314,constant,1.92
+feature_315,constant,0.08
+feature_322,constant,0.08
+feature_325,constant,0.08
+feature_326,constant,0.32
+feature_327,constant,0.32
+feature_328,constant,0.32
+feature_329,constant,0.32
+feature_330,constant,0.32
+feature_342,constant,0.48
+feature_347,constant,0.48
+feature_364,constant,0.48
+feature_369,constant,0.48
+feature_370,constant,0.48
+feature_371,constant,0.48
+feature_372,constant,0.48
+feature_373,constant,0.48
+feature_374,constant,0.48
+feature_375,constant,0.48
+feature_378,constant,0.48
+feature_379,constant,0.48
+feature_380,constant,0.48
+feature_381,constant,0.48
+feature_394,constant,0.48
+feature_395,constant,0.48
+feature_396,constant,0.48
+feature_397,constant,0.48
+feature_398,constant,0.48
+feature_399,constant,0.48
+feature_400,constant,0.48
+feature_401,constant,0.48
+feature_402,constant,0.48
+feature_403,constant,0.48
+feature_404,constant,0.48
+feature_414,constant,0.56
+feature_422,constant,0.0
+feature_449,constant,1.92
+feature_450,constant,1.92
+feature_451,constant,0.08
+feature_458,constant,0.08
+feature_461,constant,0.08
+feature_462,constant,0.32
+feature_463,constant,0.32
+feature_464,constant,0.32
+feature_465,constant,0.32
+feature_466,constant,0.32
+feature_478,constant,0.48
+feature_481,constant,0.48
+feature_498,constant,0.48
+feature_501,constant,0.48
+feature_502,constant,0.48
+feature_503,constant,0.48
+feature_504,constant,0.48
+feature_505,constant,0.48
+feature_506,constant,0.48
+feature_507,constant,0.48
+feature_508,constant,0.48
+feature_509,constant,0.48
+feature_512,constant,0.48
+feature_513,constant,0.48
+feature_514,constant,0.48
+feature_515,constant,0.48
+feature_528,constant,0.48
+feature_529,constant,0.48
+feature_530,constant,0.48
+feature_531,constant,0.48
+feature_532,constant,0.48
+feature_533,constant,0.48
+feature_534,constant,0.48
+feature_535,constant,0.48
+feature_536,constant,0.48
+feature_537,constant,0.48
+feature_538,constant,0.48
+feature_72,missing > 40%,45.81
+feature_73,missing > 40%,45.81
+feature_85,missing > 40%,88.99
+feature_109,missing > 40%,77.57
+feature_110,missing > 40%,77.57
+feature_111,missing > 40%,77.57
+feature_157,missing > 40%,90.34
+feature_158,missing > 40%,90.34
+feature_220,missing > 40%,88.99
+feature_244,missing > 40%,77.57
+feature_245,missing > 40%,77.57
+feature_246,missing > 40%,77.57
+feature_292,missing > 40%,90.34
+feature_293,missing > 40%,90.34
+feature_345,missing > 40%,45.81
+feature_346,missing > 40%,45.81
+feature_358,missing > 40%,88.99
+feature_382,missing > 40%,77.57
+feature_383,missing > 40%,77.57
+feature_384,missing > 40%,77.57
+feature_492,missing > 40%,88.99
+feature_516,missing > 40%,77.57
+feature_517,missing > 40%,77.57
+feature_518,missing > 40%,77.57
+feature_578,missing > 40%,62.89
+feature_579,missing > 40%,62.89
+feature_580,missing > 40%,62.89
+feature_581,missing > 40%,62.89

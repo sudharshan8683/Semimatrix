@@ -1,0 +1,5 @@
+{
+  "variant": "top 50 + recent rows weighted more",
+  "n_features": 50,
+  "recency_weights": true
+}
