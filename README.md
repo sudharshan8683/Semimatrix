@@ -1,146 +1,241 @@
-# Semimatrix: Semiconductor Manufacturing Decision-Support Platform
+<div align="center">
 
-Semimatrix is an industrial-grade manufacturing intelligence and decision-support platform designed for cleanroom equipment health, wafer-lot progression, yield loss attribution, and predictive maintenance. Developed as a research project for technical panel demonstration, the platform enforces strict data provenance, multi-tenant workspace isolation, statistical process control (SPC), and explainable anomaly detection.
+# 🌐 SemiMatrix Fab
+### Industrial Cleanroom Process Intelligence & Wafer Yield Platform
+
+[![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%205-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![FastAPI](https://img.shields.io/badge/ML%20Service-Python%203.11%20%7C%20FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Tests-Vitest%20%7C%20Pytest-FCC624?logo=vitest&logoColor=black)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Production--Grade%20Prototype-059669)](#)
+
+<p align="center">
+  <b>A real-time semiconductor manufacturing decision-support platform designed for cleanroom tool health, wafer-lot progression, statistical process control (SPC), and yield loss attribution.</b>
+</p>
+
+[Quickstart](#-quickstart--local-setup) • [Features](#-core-functional-modules) • [Data Ingestion & ZIP Support](#-cleanroom-telemetry-ingestion) • [Architecture](#-system-architecture) • [Credentials](#-default-credentials)
 
 ---
 
-## 1. Architectural Overview
+</div>
 
-The application utilizes a decoupled, three-tier architecture:
+## 📌 Executive Summary
+
+Modern semiconductor fabrication cleanrooms generate gigabytes of high-frequency sensor telemetry across complex lithography, plasma etch, and chemical-vapor deposition processes. When chamber excursions occur, fab engineers need immediate, explainable insights rather than opaque "black-box" models.
+
+**SemiMatrix Fab** bridges the gap between raw machine telemetry and actionable engineering decisions. Built with an industrial cleanroom UI/UX and a resilient three-tier architecture, it provides:
+- **Real-Time Statistical Process Control (SPC):** Phase I baseline calculations and Nelson Rules (1–3) on chamber temperature, vacuum pressure, and RF power.
+- **Stage-by-Stage Wafer Yield Rollups:** Granular defect decomposition tracking good units vs. scrap count across wafer lots.
+- **Adaptive Data Ingestion & ZIP Support:** Upload compressed `.zip` telemetry archives, raw `.csv`, or `.xlsx` files with automatic column profiling and formula defanging.
+- **Zero-Fabrication Capability Matrix:** Transparently verifies which algorithms can mathematically run on uploaded datasets — missing columns are disabled without fabricating data.
+
+---
+
+## 🚀 Core Functional Modules
 
 ```
-+---------------------------+       +-----------------------------+       +------------------------+
-|      Frontend Web UI      | ----> |     Node.js API Gateway     | ----> |    Python ML Service   |
-|   React (Vite) + Tailwind |       |   Express + TypeScript      |       |   FastAPI + Scikit-Learn |
-|   Port 5173               | <---- |   Port 5000                 | <---- |   Port 8000 (Stateless)|
-+---------------------------+       +--------------+--------------+       +------------------------+
-                                                   |
-                                                   v
-                                    +-----------------------------+
-                                    |     MongoDB / In-Memory     |
-                                    |     Workspace Scoped Store  |
-                                    +-----------------------------+
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FAB OPERATIONS & TELEMETRY                      │
+├──────────────────┬──────────────────┬─────────────────┬────────────────┤
+│   📊 Overview    │   🔬 Equipment   │  📈 Production  │   🚨 Alerts    │
+│ Real-Time Health │  15 Cleanroom    │  Wafer Yield &  │  Excursion &   │
+│   & Fleet Risk   │  Tools Across    │   Stage Scrap   │    Incident    │
+│     Rollups      │  5 Process Bays  │  Decomposition  │     Triage     │
+└──────────────────┴──────────────────┴─────────────────┴────────────────┘
+                                  │
+┌─────────────────────────────────┴──────────────────────────────────────┐
+│                      DATA INGESTION & CAPABILITY                       │
+│  📁 Datasets & Mapping: CSV, XLSX, ZIP Auto-Extraction & Profiling     │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-1. **Frontend (`frontend/`)**: React 18 with Vite and TypeScript. SCADA/MES industrial styling with neutral slate colors, 1px borders, tabular monospace numerics, accessible contrast (WCAG AA), and persistent Data Basis badges (`synthetic`, `uploaded`, `benchmark`, `live`).
-2. **Backend Gateway (`backend/`)**: Node.js + Express + TypeScript with layered structure (`routes -> controllers -> services -> repositories`). Enforces JWT access (15m) and rotating refresh (7d) authentication, Zod schema validation, Pino structured logging with PII redaction, and strict workspace isolation.
-3. **Storage Layer**: Dual-mode data persistence. Connects to MongoDB when `MONGODB_URI` is provided; defaults to an isolated in-memory repository for zero-dependency execution on fresh clones.
-4. **Machine Learning Microservice (`ml/`)**: Stateless Python FastAPI service. Exposes endpoints for SECOM benchmark inference, rolling anomaly scoring, and model card metadata. Persists models with Joblib.
+### 1. Operations Overview (`/overview`)
+- **Fleet Health Status:** Real-time visibility across all 15 cleanroom tools categorized into *Nominal*, *Parameter Drift*, and *Critical Excursion*.
+- **Live KPI Banners:** Instant metrics for *Operational Availability*, *Active Alerts*, *Current Wafer Yield (vs. target)*, and *Predicted Fleet Risk*.
+- **Equipment Queue:** Interactive triage table with direct tool inspection, risk scoring, and recommended engineer actions.
+- **Dual Source Switching:** Seamlessly toggle between **Simulated Demo Data** (15 pre-seeded cleanroom tools) and **User-Uploaded Telemetry**.
+
+### 2. Equipment Health (`/equipment`)
+- **5 Process Bays Monitored:** LPCVD furnaces, High-Density Plasma Etchers, DUV Stepper Scanners, Chemical Mechanical Planarization (CMP), and Ion Implanters.
+- **Shewhart I-Charts:** Continuous parameter charts with Upper/Lower Control Limits (UCL / LCL) and automated Nelson Rule tripwires (Rule 1: outlier beyond 3σ, Rule 2: nine consecutive points on one side of center line, Rule 3: six consecutive points steadily trending).
+
+### 3. Production & Yield Analytics (`/yield`)
+- **Stage Scrap Decomposition:** Step-by-step defect loss breakdown across wafer lots.
+- **Lot Traceability:** Track wafer carriers from initial deposition through final implant and metrology inspection.
+- **Line Yield Calculations:** Automated pass rate formulas (`good_units / total_units * 100`) with variance tracking.
+
+### 4. Alerts & Incidents (`/alerts`)
+- **Triaged Event Stream:** Severity-ranked cleanroom excursions (*Critical*, *Warning*, *Info*).
+- **Incident Lifecycle:** Complete status workflows (`Open` ➔ `Acknowledged` ➔ `Resolved`).
+- **Audit Trails:** Immutable logging of user interventions and timestamped timestamps.
+
+### 5. Datasets & Auto-Mapping (`/datasets`)
+- **Multi-Format Ingestion:** Drag-and-drop `.csv`, `.xlsx`, or `.zip` files up to 50MB.
+- **ZIP Auto-Extraction:** Safely unzips archives, detects cleanroom tabular files, and strips OS metadata.
+- **Semiconductor Synonym Engine:** Auto-maps arbitrary sensor headers (`temp_c`, `press_mtorr`, `carrier_id`) to canonical cleanroom parameters (`temperature`, `pressure`, `wafer_lot_id`).
+- **Capability Matrix:** Mathematical verification engine confirming algorithm readiness:
+  - ✅ **Wafer Yield Analysis** (Requires: `total_units`, `good_units` / `defect_count`)
+  - ✅ **SPC Control Charts** (Requires: `timestamp`, at least one numeric sensor)
+  - ✅ **Predictive Equipment Health** (Requires: `equipment_id`, `timestamp`, numeric telemetry)
+  - ✅ **Lot-to-Tool Traceability** (Requires: `wafer_lot_id`, `equipment_id`)
 
 ---
 
-## 2. Core Functional Modules
+## 📦 Cleanroom Telemetry Ingestion
 
-- **Accessible First-Run Onboarding (`/onboarding` & `/getting-started`)**: Restrained onboarding experience with two clearly separated paths for both domain experts and general users. Dismissible, state-persisted per user workspace.
-  - **Path A ("Try with sample data")**: 1-click synthetic generator supporting reproducible scenarios (*Normal operation*, *Gradual equipment drift*, *Sudden fault*, *Contaminated lot / yield loss*), automatic canonical column mapping, direct routing to relevant finding, downloadable sample CSV, and explicit "Synthetic / simulated" data-basis badges.
-  - **Path B ("Use my own data")**: 3-step guided wizard for custom CSV/XLSX cleanroom files, plain-language check explanations, column mapping review with confidence labels and sample values, plain-language capability matrix linking back to mapping, zero metric fabrication, and full dataset deletion.
-- **Plain-Language Explanation Layer & Glossary (`/glossary`)**: Dedicated glossary and interactive tooltips for 13 fundamental semiconductor and SPC concepts (Yield, Availability, Utilization, SPC, Control Limits, Cp/Cpk, Anomaly Score, Maintenance Risk, Correlation vs Causation, Confidence). Every finding features two layers: a deterministic plain summary first, followed by expandable technical evidence.
-- **Operations Overview (`/overview`)**: Real-time line availability, wafer yield, predicted fleet risk, 7-day yield progression, two-layer operational findings with non-causal language, and equipment attention triage queue.
-- **Equipment Monitoring (`/equipment`)**: 15 cleanroom tools across 5 process types (CVD, Etch, Lithography, CMP, Ion Implant). Features per-tool parameter catalogues and Shewhart I-charts with Phase I baseline control limits and Nelson Rules 1–4.
-- **Lots & Yield Analytics (`/yield`)**: Wafer-lot inventory, step-by-step defect loss decomposition, tool-to-yield correlation, and chronological stage traceability.
-- **Predictive Maintenance (`/predictive-maintenance`)**: Fleet degradation ranking, synthetic ground-truth detection scorecards (precision, recall, lead time), and holdout SECOM benchmark metrics.
-- **Root-Cause Investigation (`/investigations`)**: Excursion timeline, candidate factor ranking with standardized effect sizes (Cohen's d), alternative explanations, and engineer verification checklists.
-- **Datasets & Capability Matrix (`/datasets`)**: Drag-and-drop CSV/XLSX file ingestion, magic byte checks, macro rejection (`.xlsm`), formula defanging (`'`, `=+ - @`), synonym auto-mapping, and a 5-point capability verification matrix.
-- **Alerts Center (`/alerts`)**: Severity-ranked alerts with complete lifecycle triage (Open -> Acknowledged -> Resolved) and audit log recording.
-- **Reports & Export (`/reports`)**: Technical audit report generator with executive plain-language summary at the top, diagnostic findings with evidence, recommended actions, operational limitations, and formula-defanged CSV export.
-- **Model Card & Limitations (`/model-card`)**: In-app transparency documentation of training data provenance, 17/314 class imbalance, and why raw accuracy (94.6%) is misleading.
+SemiMatrix Fab is tailored for semiconductor fabrication cleanrooms. You can upload custom production data or use the pre-built sample templates.
+
+### What Telemetry Columns Are Expected?
+
+| Canonical Field | Recognized Synonyms | Purpose |
+| :--- | :--- | :--- |
+| `timestamp` | `time`, `date`, `datetime`, `ts`, `recorded_at` | Time-series chronological ordering |
+| `equipment_id` | `tool_id`, `tool`, `chamber_id`, `machine_id`, `station` | Asset identification & tool routing |
+| `equipment_type`| `tool_type`, `machine_type`, `bay_type`, `category` | Process classification (CVD, Etch, Litho, CMP, Implant) |
+| `wafer_lot_id` | `lot_id`, `lot`, `batch_id`, `run_id`, `carrier_id` | Wafer lot traceability across stages |
+| `temperature` | `temp`, `chamber_temp`, `temp_c`, `chuck_temp`, `heater_temp` | Thermal sensor telemetry (SPC monitoring) |
+| `pressure` | `chamber_pressure`, `vac_pressure`, `vacuum`, `press_mtorr` | Vacuum / pressure telemetry |
+| `vibration` | `vib`, `pump_vibration`, `rms_vibration`, `accel_rms` | Mechanical pump & spindle health |
+| `current` | `beam_current`, `bias_current`, `motor_current`, `amps` | RF power & electrical current |
+| `total_units` | `total_wafers`, `inspected_units`, `batch_size`, `wafers_in` | Denominator for yield computation |
+| `good_units` | `passed_wafers`, `pass_count`, `good_wafers`, `wafers_out` | Passing units for line yield |
+| `defect_count` | `defects`, `fails`, `failed_wafers`, `scrapped_units` | Scrap count decomposition |
+| `failure_label`| `failure`, `fail`, `is_failure`, `maintenance_required` | Supervised fault classification ground truth |
+
+### 📥 Sample Cleanroom Datasets
+
+Pre-built sample cleanroom datasets are included in the repository for immediate testing:
+- **Sample CSV:** [`frontend/public/semimatrix_synthetic_cleanroom_data.csv`](frontend/public/semimatrix_synthetic_cleanroom_data.csv)
+- **Sample ZIP:** [`frontend/public/semimatrix_cleanroom_sample.zip`](frontend/public/semimatrix_cleanroom_sample.zip)
+
+*(You can also download these directly from within the in-app **Upload Dataset** modal with 1 click).*
 
 ---
 
-## 3. Quickstart & Local Execution
+## 🏗️ System Architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND CLIENT (PORT 5173)                     │
+│  React 18 • Vite 5 • Tailwind CSS • Lucide Icons • Responsive Layout   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTP / REST & JWT Cookies
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      BACKEND API GATEWAY (PORT 5000)                   │
+│  Node.js • Express • TypeScript • Zod Validation • AdmZip Safe Parser  │
+├────────────────────────────────────────────────────────────────────────┤
+│  Services:                                                             │
+│  • DatasetUploadService (Magic Bytes, Defanging, Profiling, Mapping)   │
+│  • MetricsService (Shewhart SPC, Nelson Rules, Availability, Yield)    │
+│  • SeedService (Cleanroom 15-Tool Demo Generator & Persistence)        │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │                                │
+                    ▼                                ▼
+┌─────────────────────────────────────┐  ┌───────────────────────────────┐
+│        DATA PERSISTENCE LAYER       │  │    PYTHON ML ENGINE (PORT 8000│
+│  Dual-Mode Storage Architecture:    │  │  FastAPI • Scikit-Learn •     │
+│  • External MongoDB (when MONGODB_URI)│  │  Isolation Forest • RUL Model │
+│  • High-Performance Disk In-Memory  │  │  UCI SECOM Benchmark Pipeline │
+│    with .store_*.json persistence   │  └───────────────────────────────┘
+└─────────────────────────────────────┘
+```
+
+### Cleanroom Security & Protection
+1. **Formula Defanging (Anti-CSV Injection):** Sanitizes spreadsheet cells starting with `=`, `+`, `-`, or `@` by prepending `'` to prevent remote execution in Excel.
+2. **Macro Rejection:** Strictly rejects `.xlsm` (macro-enabled workbooks) to eliminate VBA payload risks.
+3. **Archive Extraction Protection:** Blocks dangerous script or executable files (`.exe`, `.bat`, `.sh`, `.cmd`) inside uploaded `.zip` archives.
+4. **Magic Byte Verification:** Inspects binary headers (`50 4B` for ZIP/XLSX) to prevent file extension spoofing.
+
+---
+
+## ⚡ Quickstart & Local Setup
 
 ### Prerequisites
-- Node.js v18+ (tested on Node v24.18.0) and npm
-- Python 3.11 with virtual environment support
+- **Node.js:** v18.0.0 or higher
+- **Python:** v3.11 with virtual environment support
+- **Git**
 
-### Step 1: Start the Python ML Service
+### 1. Clone the Repository
+```bash
+git clone https://github.com/sudharshan8683/Semimatrix.git
+cd Semimatrix
+```
+
+### 2. Start the Python ML Service
 In your first terminal:
 ```powershell
-# Activate Python 3.11 virtual environment
+# Windows PowerShell:
 .\.venv\Scripts\activate
+python -m uvicorn main:app --app-dir ml/service --host 127.0.0.1 --port 8000
 
-# Start the stateless FastAPI service on port 8000
+# macOS / Linux:
+source .venv/bin/activate
 python -m uvicorn main:app --app-dir ml/service --host 127.0.0.1 --port 8000
 ```
-Verify: Navigating to `http://127.0.0.1:8000/health` returns `{"status":"healthy","service":"semimatrix-ml-service"}`.
+> **Verification:** Navigating to `http://localhost:8000/health` returns `{"status":"healthy","service":"semimatrix-ml-service"}`.
 
-### Step 2: Seed Demo Data and Start the Node Backend
+### 3. Start the Backend API
 In your second terminal:
-```powershell
+```bash
 cd backend
 npm install
-
-# Seed the deterministic cleanroom demo dataset (15 tools, 15,120 readings, 3 injected excursions)
-npm run seed:demo
-
-# Start the Express API Gateway on port 5000
 npm run dev
 ```
-Verify: Navigating to `http://127.0.0.1:5000/health` returns `{"status":"healthy","app":"Semimatrix"}`.
+> **Verification:** Navigating to `http://localhost:5000/health` returns `{"status":"healthy","app":"Semimatrix"}`.
 
-### Step 3: Start the Frontend Application
+### 4. Start the Frontend Application
 In your third terminal:
-```powershell
+```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+> **Verification:** Open `http://localhost:5173` in your browser.
 
 ---
 
-## 4. Default Operator Credentials
+## 🔑 Default Credentials
 
-| Role | Email | Password | Scope |
-| :--- | :--- | :--- | :--- |
-| **Lead Process Engineer** | `engineer@semimatrix.local` | `Semimatrix123!` | Full Workspace Owner |
-| **Demo Operator** | `demo@semimatrix.local` | `Semimatrix123!` | Full Workspace Owner |
+The platform includes pre-seeded operator accounts that persist across reboots:
 
-*Note: New workspaces can be provisioned via the "Register Workspace" button on the login screen.*
+| User Account | Email | Password | Role | Permissions |
+| :--- | :--- | :--- | :--- | :--- |
+| **Primary Engineer** | `sudharsudhar2234@gmail.com` | `Sudharshan@2007` | Owner | Full Cleanroom Admin & Ingestion |
+| **Demo Operator** | `demo@semimatrix.local` | `Semimatrix123!` | Owner | Full Cleanroom Admin & Ingestion |
+| **Lead Process Engineer** | `engineer@semimatrix.local` | `Semimatrix123!` | Owner | Full Cleanroom Admin & Ingestion |
+
+*(You can also register a new custom account anytime on the [Register Screen](http://localhost:5173/register)).*
 
 ---
 
-## 5. Verification & Test Suite Execution
+## 🧪 Automated Test Suites
 
-All test suites can be executed independently:
+The repository contains automated unit and integration tests across all tiers:
 
-### Backend Test Suite (Vitest)
-```powershell
+```bash
+# Run Backend Vitest Suite (7 unit tests including ZIP extraction & defanging)
 cd backend
 npm test
-```
-*Executes 39 automated tests across 10 suites (summary templates, sample generation scenarios, auth isolation, metrics consistency, SPC Nelson rules, dataset upload defanging, predictive maintenance, and investigation reports).*
 
-### Python ML Test Suite (Pytest)
-```powershell
+# Run Python ML Pipeline Tests
 .\.venv\Scripts\python.exe -m pytest ml/tests/test_pipeline.py -v
-```
-*Executes 5 pipeline tests asserting SECOM benchmark metrics, tripwire anomaly scoring, and model card metadata.*
 
-### Frontend Production Build Verification
-```powershell
+# Verify Frontend Production Build (Typecheck & Minification)
 cd frontend
 npm run build
 ```
-*Executes `tsc -b && vite build` ensuring strict type correctness across all 2,689 frontend modules.*
 
 ---
 
-## 6. Comprehensive Documentation Index
+## 📜 Regulatory Notice & Safety Policy
 
-All architectural guidelines and scientific notes are committed in `docs/`:
-
-1. [docs/PLAN.md](docs/PLAN.md): Initial architectural plan, data schemas, and non-goals.
-2. [docs/PROGRESS.md](docs/PROGRESS.md): Chronological record of completed implementation milestones.
-3. [docs/METRICS.md](docs/METRICS.md): Mathematical definitions, denominators, and tooltips for all KPIs.
-4. [docs/SYNTHETIC_DATA.md](docs/SYNTHETIC_DATA.md): Cleanroom simulation parameters, AR(1) noise, and injected ground truth.
-5. [docs/MODEL_CARD.md](docs/MODEL_CARD.md): SECOM model card, time-split methodology, PR-AUC, and failure modes.
-6. [docs/LIMITATIONS.md](docs/LIMITATIONS.md): Operational boundaries, non-actuation policy, and label scarcity.
-7. [docs/INTEGRATION_ROADMAP.md](docs/INTEGRATION_ROADMAP.md): SECS/GEM and SEMI EDA Interface A integration specifications.
-8. [docs/TEST_REPORT.md](docs/TEST_REPORT.md): Verified test outputs from Vitest, Pytest, and Vite builds.
+> **ADVISORY ONLY:** SemiMatrix Fab is engineered as an industrial decision-support and process intelligence platform. It does not issue physical write commands, recipe modifications, or safety interlock overrides to semiconductor manufacturing tools (SECS/GEM, AMHS vehicles). All physical maintenance interventions must be verified and performed by authorized cleanroom process personnel.
 
 ---
 
-## 7. Safety Notice & Boundary Policy
-
-**Advisory Only:** Semimatrix is designed strictly for diagnostic decision support. It does not send write commands, setpoint overrides, or recipe modifications to fab cleanroom tools or AMHS vehicles. All physical interventions must be verified and executed by authorized personnel.
+<div align="center">
+  <sub>Built with ❤️ for Semiconductor Cleanroom Engineering & Process Intelligence</sub>
+</div>
