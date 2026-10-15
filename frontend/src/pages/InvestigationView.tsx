@@ -81,34 +81,30 @@ export const InvestigationView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Title & Control Bar */}
-      <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl p-5 shadow-sm">
+      <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900 dark:text-white">
-                Root Cause Analysis & Excursion Attribution
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                Root Cause Analysis
               </h1>
-              <DataBasisBadge sourceType="synthetic" />
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-              Standardized statistical effect size ranking (Cohen's d) for candidate contributing factors across cleanroom process stages.
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5">
             <button
               onClick={handleTriggerNew}
               disabled={triggering}
-              className="px-3.5 py-2 rounded-lg bg-[#16324F] hover:bg-navy-800 dark:bg-sky-600 dark:hover:bg-sky-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              className="px-3.5 py-2 rounded-lg bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-xs font-medium shadow-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
             >
               <Search size={14} />
-              <span>{triggering ? 'Analyzing Cleanroom Telemetry...' : 'Trigger Analysis'}</span>
+              <span>{triggering ? 'Analyzing...' : 'Trigger Analysis'}</span>
             </button>
 
             <button
               onClick={fetchInvestigations}
               disabled={loading}
-              className="p-2 rounded-lg border border-[#E4E7EC] dark:border-[#1E2D4A] bg-white dark:bg-[#18243C] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-sm"
+              className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shadow-sm"
               title="Refresh investigations"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />

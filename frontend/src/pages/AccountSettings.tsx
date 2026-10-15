@@ -33,12 +33,12 @@ export const AccountSettings: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl font-sans text-xs">
       {/* Title */}
-      <div className="pb-4 border-b border-slate-200 dark:border-navy-700">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Workspace Isolation & Operator Security
+      <div className="pb-4 border-b border-neutral-200 dark:border-neutral-800">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+          Workspace & Security
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-          Cryptographic multi-tenant scoping, authenticated operator session controls, and workspace lifecycle management.
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 font-sans">
+          Operator profile, credentials, and workspace lifecycle settings.
         </p>
       </div>
 

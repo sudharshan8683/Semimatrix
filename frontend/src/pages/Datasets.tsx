@@ -258,16 +258,16 @@ export const Datasets: React.FC = () => {
   return (
     <div className="space-y-6 font-sans text-xs">
       {/* Title & Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-navy-700">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Data Ingestion & Schema Alignment
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+              Data Ingestion & Mapping
             </h1>
             <DataBasisBadge sourceType={selectedDataset?.sourceType || 'uploaded'} />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-            Upload proprietary cleanroom CSV or Excel telemetry, verify header mapping against standard fab metrics, and activate verified analysis models.
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 font-sans">
+            Upload cleanroom CSV or Excel telemetry and verify schema alignment.
           </p>
         </div>
 
@@ -339,7 +339,7 @@ export const Datasets: React.FC = () => {
         <div className="md:col-span-2 bg-white dark:bg-navy-900/60 border-2 border-dashed border-slate-300 dark:border-navy-700 rounded-xl p-6 text-center hover:border-navy-600 dark:hover:border-navy-500 transition-colors">
           <Upload size={24} className="mx-auto text-navy-700 dark:text-navy-300 mb-2" />
           <h2 className="text-sm font-display font-bold text-slate-900 dark:text-slate-100">
-            Step 1: Upload Sensor or Yield File (.csv, .xlsx)
+            Step 1: Upload Sensor or Yield File (.csv, .xlsx, .zip)
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
             Maximum file size: 25 MB (up to 100,000 rows). Automated formula sanitization is applied. Macro workbooks (.xlsm) are prohibited.
@@ -349,7 +349,7 @@ export const Datasets: React.FC = () => {
             <span>{uploading ? 'Parsing & Profiling Telemetry...' : 'Browse Local Computer'}</span>
             <input
               type="file"
-              accept=".csv,.xlsx"
+              accept=".csv,.xlsx,.zip"
               onChange={handleFileUpload}
               disabled={uploading}
               className="hidden"

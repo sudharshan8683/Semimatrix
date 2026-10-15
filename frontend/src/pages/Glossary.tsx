@@ -22,16 +22,16 @@ export const Glossary: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl font-sans text-xs">
       {/* Title & Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-navy-700">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <div className="flex items-center gap-3">
-            <BookOpen size={24} className="text-amber-500" />
-            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Cleanroom Metrology & Statistical Reference
+            <BookOpen size={22} className="text-black dark:text-white" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+              Metrology & Statistical Glossary
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-            Plain-English definitions, mathematical formulations, and strict boundary conditions (what each metric does and does not prove).
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 font-sans">
+            Semiconductor definitions, formulas, and operational boundary conditions.
           </p>
         </div>
 

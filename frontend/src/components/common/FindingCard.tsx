@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { DataBasisBadge, DataSourceType } from './DataBasisBadge';
 import { StatusPill } from './StatusPill';
 
@@ -31,17 +31,17 @@ export const FindingCard: React.FC<FindingCardProps> = ({
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
-    <div className={`bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl shadow-sm hover:shadow-md transition-all duration-150 overflow-hidden font-sans text-xs ${className}`}>
-      {/* Layer 1: Plain-Language Summary Header */}
+    <div className={`bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm hover:border-neutral-400 dark:hover:border-neutral-700 transition-all duration-150 overflow-hidden font-sans text-xs ${className}`}>
+      {/* Summary Header */}
       <div className="p-4 flex flex-col gap-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <StatusPill status={severity} />
-            <span className="font-display font-semibold text-sm sm:text-base text-slate-900 dark:text-white">
+            <span className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white">
               {title}
             </span>
             {equipmentId && (
-              <span className="text-[#16324F] dark:text-cyan-300 font-mono font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs border border-slate-200 dark:border-slate-700">
+              <span className="text-neutral-700 dark:text-neutral-300 font-mono font-medium px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 text-xs border border-neutral-200 dark:border-neutral-800">
                 {equipmentId}
               </span>
             )}
@@ -49,53 +49,45 @@ export const FindingCard: React.FC<FindingCardProps> = ({
 
           <div className="flex items-center gap-2">
             {confidence && (
-              <span className="px-2 py-0.5 rounded-full text-[11px] uppercase font-sans font-semibold border border-[#E4E7EC] dark:border-[#1E2D4A] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800">
+              <span className="px-2 py-0.5 rounded text-[11px] font-sans font-medium border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900 capitalize">
                 {confidence} Confidence
               </span>
             )}
-            <DataBasisBadge sourceType={dataBasis} />
           </div>
         </div>
 
-        {/* Plain Language Sentence (Layer 1) */}
-        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
+        {/* Summary text */}
+        <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-sans">
           {plainSummary}
         </p>
 
         {recommendedAction && (
-          <div className="mt-1 pt-2.5 border-t border-slate-100 dark:border-[#1E2D4A] flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
-            <span className="font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 shrink-0 text-[10px]">
+          <div className="mt-1 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-start gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+            <span className="font-semibold text-neutral-900 dark:text-neutral-200 shrink-0">
               Recommended Action:
             </span>
-            <span className="text-slate-800 dark:text-slate-200">{recommendedAction}</span>
+            <span className="text-neutral-800 dark:text-neutral-300">{recommendedAction}</span>
           </div>
         )}
 
-        {/* Toggle Technical Evidence */}
+        {/* Toggle Details */}
         {technicalDetails && (
-          <div className="mt-1 pt-2 border-t border-slate-100 dark:border-[#1E2D4A] flex justify-between items-center text-[11px]">
-            <span className="text-slate-400 dark:text-slate-500 italic text-[10px]">
-              Statistical correlation. Physical cleanroom verification required.
-            </span>
+          <div className="mt-1 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-end items-center text-xs">
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1 font-semibold text-[#16324F] dark:text-sky-400 hover:underline transition-colors"
+              className="inline-flex items-center gap-1 font-medium text-neutral-900 dark:text-neutral-100 hover:underline transition-colors"
             >
-              <span>{expanded ? 'Hide Technical Evidence' : 'View Technical Evidence & Charts'}</span>
+              <span>{expanded ? 'Hide Details' : 'View Details'}</span>
               {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </button>
           </div>
         )}
       </div>
 
-      {/* Layer 2: Expandable Technical Detail */}
+      {/* Expandable Details */}
       {technicalDetails && expanded && (
-        <div className="p-4 bg-slate-50/80 dark:bg-[#0E1626] border-t border-[#E4E7EC] dark:border-[#1E2D4A] space-y-3 font-sans">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Info size={12} className="text-[#16324F] dark:text-sky-400" />
-            <span>Statistical Evidence & Engineering Detail</span>
-          </div>
+        <div className="p-4 bg-neutral-50 dark:bg-neutral-900/60 border-t border-neutral-200 dark:border-neutral-800 space-y-3 font-sans">
           {technicalDetails}
         </div>
       )}

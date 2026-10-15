@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { Lock, Mail, User, Building, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, Building, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export const Register: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -27,107 +27,115 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B111D] p-4 relative font-sans">
-      <div className="absolute top-4 right-4 z-20">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative font-sans text-white bg-black bg-cover bg-center bg-no-repeat overflow-hidden"
+      style={{ backgroundImage: "url('/login-bg.png?v=3')" }}
+    >
+      {/* Top Left: Semi Matrix Fab Logo */}
+      <Link
+        to="/login"
+        className="absolute top-6 left-6 sm:top-8 sm:left-10 z-20 flex items-center gap-3 select-none group text-left transition-transform hover:scale-105"
+      >
+        <img
+          src="/logo-circle.png"
+          alt="Semi Matrix Fab"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shadow-[0_0_15px_rgba(37,99,235,0.4)] ring-1 ring-white/25 group-hover:ring-blue-400 transition-all"
+        />
+        <div className="flex flex-col">
+          <span className="font-mono font-bold tracking-[0.2em] text-xs sm:text-sm text-white uppercase">
+            SEMI MATRIX FAB
+          </span>
+        </div>
+      </Link>
+
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-10 z-20">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-md bg-white dark:bg-[#131D31] p-8 rounded-2xl border border-slate-200 dark:border-navy-700/80 shadow-card relative overflow-hidden">
-        {/* Subtle decorative top bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-navy-900 via-amber-500 to-navy-700 dark:from-navy-600 dark:via-amber-400 dark:to-navy-500" />
-
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl border border-neutral-200 shadow-[0_20px_50px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] relative z-10 overflow-hidden text-neutral-900">
         {/* Brand Header */}
-        <div className="flex items-center gap-3.5 mb-6 pb-5 border-b border-slate-100 dark:border-navy-700/80">
-          <div className="w-10 h-10 rounded-xl bg-navy-900 dark:bg-slate-100 text-white dark:text-navy-950 flex items-center justify-center font-display font-black text-sm shrink-0 shadow-sm">
-            SM
-          </div>
+        <div className="flex items-center gap-3.5 mb-6 pb-5 border-b border-neutral-200">
+          <img
+            src="/logo-circle.png"
+            alt="Semi Matrix Fab"
+            className="w-11 h-11 rounded-full object-cover ring-2 ring-neutral-200 shadow-sm shrink-0"
+          />
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-display font-bold text-xl text-slate-900 dark:text-slate-100 tracking-tight leading-none">
-                Semimatrix
-              </h1>
-              <span className="text-[10px] font-sans font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                Fab Intelligence
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-sans">
-              Semiconductor Manufacturing Process Platform
-            </p>
+            <h1 className="font-display font-bold text-lg text-neutral-950 tracking-tight leading-none">
+              Semi Matrix Fab
+            </h1>
           </div>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-base font-display font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
-            Provision Isolated Workspace
+          <h2 className="text-xl font-display font-bold text-neutral-950 tracking-tight">
+            Register Workspace
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            Every workspace has cryptographic data isolation. No telemetry or reports are shared across tenants.
-          </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 text-[11px] uppercase tracking-wider">
-              Operator Full Name
+            <label className="block font-semibold text-neutral-700 mb-1.5 text-xs">
+              Full Name
             </label>
             <div className="relative">
-              <User size={14} className="absolute left-3 top-2.5 text-slate-400" />
+              <User size={14} className="absolute left-3 top-3 text-neutral-400" />
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Dr. Eleanor Vance"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-navy-700 dark:focus:border-amber-500 text-xs"
+                placeholder="Eleanor Vance"
+                className="w-full pl-9 pr-3 py-2.5 bg-neutral-50/80 hover:bg-neutral-50 focus:bg-white border border-neutral-300 focus:border-neutral-900 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 text-xs transition-colors shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 text-[11px] uppercase tracking-wider">
-              Work Email Address
+            <label className="block font-semibold text-neutral-700 mb-1.5 text-xs">
+              Email Address
             </label>
             <div className="relative">
-              <Mail size={14} className="absolute left-3 top-2.5 text-slate-400" />
+              <Mail size={14} className="absolute left-3 top-3 text-neutral-400" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.vance@fabcorp.com"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-navy-700 dark:focus:border-amber-500 text-xs font-mono"
+                placeholder="e.vance@company.com"
+                className="w-full pl-9 pr-3 py-2.5 bg-neutral-50/80 hover:bg-neutral-50 focus:bg-white border border-neutral-300 focus:border-neutral-900 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 text-xs font-mono transition-colors shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 text-[11px] uppercase tracking-wider">
-              Fab / Facility Name
+            <label className="block font-semibold text-neutral-700 mb-1.5 text-xs">
+              Workspace / Facility Name
             </label>
             <div className="relative">
-              <Building size={14} className="absolute left-3 top-2.5 text-slate-400" />
+              <Building size={14} className="absolute left-3 top-3 text-neutral-400" />
               <input
                 type="text"
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder="Fab-12 Cleanroom Operations"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-navy-700 dark:focus:border-amber-500 text-xs"
+                placeholder="Primary Operations"
+                className="w-full pl-9 pr-3 py-2.5 bg-neutral-50/80 hover:bg-neutral-50 focus:bg-white border border-neutral-300 focus:border-neutral-900 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 text-xs transition-colors shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1 text-[11px] uppercase tracking-wider">
-              Password (Min 8 Characters)
+            <label className="block font-semibold text-neutral-700 mb-1.5 text-xs">
+              Password
             </label>
             <div className="relative">
-              <Lock size={14} className="absolute left-3 top-2.5 text-slate-400" />
+              <Lock size={14} className="absolute left-3 top-3 text-neutral-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -135,12 +143,12 @@ export const Register: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-9 py-2 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-navy-700 dark:focus:border-amber-500 text-xs font-mono"
+                className="w-full pl-9 pr-9 py-2.5 bg-neutral-50/80 hover:bg-neutral-50 focus:bg-white border border-neutral-300 focus:border-neutral-900 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 text-xs font-mono transition-colors shadow-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-900 transition-colors"
               >
                 {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
@@ -150,19 +158,19 @@ export const Register: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 px-4 bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-600 text-slate-950 font-display font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 tracking-wide uppercase"
+            className="w-full py-2.5 px-4 bg-neutral-950 hover:bg-neutral-800 active:bg-black text-white font-semibold text-xs rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 tracking-wide shadow-md hover:shadow-lg"
           >
-            <span>{isLoading ? 'Provisioning Workspace...' : 'Provision Workspace'}</span>
-            <ArrowRight size={16} className="text-slate-950 shrink-0" />
+            <span>{isLoading ? 'Registering...' : 'Register'}</span>
+            <ArrowRight size={14} className="shrink-0 text-white" />
           </button>
         </form>
 
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-navy-700/80 text-center text-xs">
+        <div className="mt-5 pt-4 border-t border-neutral-200 text-center text-xs">
           <Link
             to="/login"
-            className="text-amber-700 dark:text-amber-400 hover:underline font-semibold text-[11px]"
+            className="text-neutral-900 hover:text-blue-600 font-semibold text-[11px] transition-colors"
           >
-            Already provisioned? Sign in →
+            Already registered? Sign in →
           </Link>
         </div>
       </div>

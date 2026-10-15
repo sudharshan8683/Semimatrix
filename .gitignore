@@ -41,3 +41,12 @@ powershell.exe
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.tsbuildinfo
+
+# Uploads and temporary test files
+backend/uploads/*.zip
+backend/uploads/*.csv
+backend/uploads/*.json
+backend/uploads/.*.json
+tests_temp/
+backend/tests/**/*.js

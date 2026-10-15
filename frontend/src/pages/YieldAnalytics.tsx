@@ -1,56 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { apiClient } from '../api/client';
-import { DataBasisBadge } from '../components/common/DataBasisBadge';
 import { StatusPill } from '../components/common/StatusPill';
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  Legend
-} from 'recharts';
-import {
-  Layers,
-  Filter,
   RefreshCw,
   Search,
   X,
   ArrowRight,
-  TrendingDown,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle2
+  UploadCloud
 } from 'lucide-react';
+import { UploadDataModal } from '../components/common/UploadDataModal';
 
 export const YieldAnalytics: React.FC = () => {
   const [lots, setLots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  // Analytics breakdowns
-  const [stageBreakdown, setStageBreakdown] = useState<any[]>([]);
-  const [toolBreakdown, setToolBreakdown] = useState<any[]>([]);
-
-  // Traceability Modal
   const [selectedLot, setSelectedLot] = useState<any | null>(null);
-  const [traceLoading, setTraceLoading] = useState(false);
 
   const fetchYieldData = async () => {
     setLoading(true);
     try {
-      const [lotsRes, stageRes, toolRes] = await Promise.all([
-        apiClient.get('/lots', { params: { status: statusFilter !== 'all' ? statusFilter : undefined } }),
-        apiClient.get('/lots/analytics/by-stage'),
-        apiClient.get('/lots/analytics/by-tool')
-      ]);
-
+      const lotsRes = await apiClient.get('/lots', {
+        params: { status: statusFilter !== 'all' ? statusFilter : undefined }
+      });
       setLots(lotsRes.data.data.lots || []);
-      setStageBreakdown(stageRes.data.data.stageBreakdown || []);
-      setToolBreakdown(toolRes.data.data.toolBreakdown || []);
     } catch (err) {
       console.error('Failed to load yield analytics:', err);
     } finally {
@@ -62,19 +37,37 @@ export const YieldAnalytics: React.FC = () => {
     fetchYieldData();
   }, [statusFilter]);
 
+  const lotStats = useMemo(() => {
+    const totalLots = lots.length;
+    if (!totalLots) return { totalLots: 0, avgYield: '0.00', totalIn: 0, totalGood: 0, totalScrap: 0 };
+    let sumYield = 0;
+    let totalIn = 0;
+    let totalGood = 0;
+    let totalScrap = 0;
+    lots.forEach((l) => {
+      sumYield += Number(l.yield ?? 0);
+      totalIn += Number(l.wafersIn ?? 0);
+      totalGood += Number(l.wafersGood ?? 0);
+      totalScrap += Number(l.wafersScrapped ?? 0);
+    });
+    return {
+      totalLots,
+      avgYield: (sumYield / totalLots).toFixed(2),
+      totalIn,
+      totalGood,
+      totalScrap
+    };
+  }, [lots]);
+
   const handleOpenTraceability = async (lotId: string) => {
-    setTraceLoading(true);
     try {
       const res = await apiClient.get(`/lots/${lotId}`);
       setSelectedLot(res.data.data.lot);
     } catch (err) {
       console.error('Failed to load lot traceability:', err);
-    } finally {
-      setTraceLoading(false);
     }
   };
 
-  // Filter lots by search query
   const filteredLots = lots.filter((lot) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
@@ -88,38 +81,40 @@ export const YieldAnalytics: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Title & Filter Bar */}
-      <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl p-5 shadow-sm">
+      <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900 dark:text-white">
-                Production Wafer Yield & Stage Traceability
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                Production Yield & Traceability
               </h1>
-              <DataBasisBadge sourceType="synthetic" />
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-              Lot progression through cleanroom stages, step-by-step defect loss decomposition, and tool correlation.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+            >
+              <UploadCloud size={14} />
+              <span>Upload Dataset</span>
+            </button>
+
             <div className="relative">
-              <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
+              <Search size={14} className="absolute left-2.5 top-2.5 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search Lot ID or recipe..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-[#18243C] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-navy-600 dark:focus:border-sky-400 w-48"
+                className="pl-8 pr-3 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-black dark:focus:border-white w-48"
               />
             </div>
 
-            {/* Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 dark:bg-[#18243C] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-lg px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-700 dark:text-neutral-300 focus:outline-none cursor-pointer"
             >
               <option value="all">All Lots</option>
               <option value="completed">Completed</option>
@@ -130,7 +125,7 @@ export const YieldAnalytics: React.FC = () => {
             <button
               onClick={fetchYieldData}
               disabled={loading}
-              className="p-2 rounded-lg border border-[#E4E7EC] dark:border-[#1E2D4A] bg-white dark:bg-[#18243C] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-sm"
+              className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shadow-sm"
               title="Refresh lot data"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -139,171 +134,92 @@ export const YieldAnalytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Yield Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Yield by Process Stage */}
-        <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="pb-3 border-b border-[#E4E7EC] dark:border-[#1E2D4A] mb-3">
-            <h2 className="text-sm font-display font-bold text-slate-900 dark:text-white">
-              Yield Loss Decomposition by Fabrication Stage
-            </h2>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Mean step yield (%) across CVD, Lithography, Etch, Implant, and CMP
-            </span>
+      {/* Wafer Lot Metric KPI Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 shadow-sm">
+          <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Total Lots Monitored
+          </span>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            {lotStats.totalLots}
           </div>
-
-          <div className="h-60 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={
-                  stageBreakdown.length
-                    ? stageBreakdown
-                    : [
-                        { stage: 'Deposition', stepYield: 98.4, defectRate: 1.6 },
-                        { stage: 'Litho', stepYield: 97.8, defectRate: 2.2 },
-                        { stage: 'Etch', stepYield: 96.5, defectRate: 3.5 },
-                        { stage: 'Implant', stepYield: 98.9, defectRate: 1.1 },
-                        { stage: 'CMP', stepYield: 91.2, defectRate: 8.8 }
-                      ]
-                }
-                margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
-                <XAxis
-                  dataKey="stage"
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                />
-                <YAxis
-                  domain={[85, 100]}
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  unit="%"
-                />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: '#1E293B',
-                    borderColor: '#334155',
-                    color: '#F8FAFC',
-                    fontSize: '11px',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="stepYield" name="Step Yield %" fill="#16324F" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <span className="text-[11px] text-neutral-500 mt-1 block">Active across all stages</span>
         </div>
 
-        {/* Tool-to-Yield Correlation */}
-        <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="pb-3 border-b border-[#E4E7EC] dark:border-[#1E2D4A] mb-3">
-            <h2 className="text-sm font-display font-bold text-slate-900 dark:text-white">
-              Tool-to-Yield Correlation & Defect Outlier Detection
-            </h2>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Average wafer yield per tool across all completed runs
-            </span>
+        <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 shadow-sm">
+          <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Fleet Mean Yield
+          </span>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            {lotStats.avgYield}%
           </div>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-medium">Target: ≥ 92.00%</span>
+        </div>
 
-          <div className="h-60 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={
-                  toolBreakdown.length
-                    ? toolBreakdown
-                    : [
-                        { equipmentId: 'CVD-01', avgYield: 95.8 },
-                        { equipmentId: 'CVD-02', avgYield: 96.1 },
-                        { equipmentId: 'ETCH-01', avgYield: 94.9 },
-                        { equipmentId: 'ETCH-02', avgYield: 93.8 },
-                        { equipmentId: 'CMP-01', avgYield: 86.4 },
-                        { equipmentId: 'CMP-02', avgYield: 95.2 },
-                        { equipmentId: 'LITHO-01', avgYield: 97.4 },
-                        { equipmentId: 'IMP-01', avgYield: 98.1 }
-                      ]
-                }
-                margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
-                <XAxis
-                  dataKey="equipmentId"
-                  tick={{ fontSize: 10, fill: '#64748B' }}
-                />
-                <YAxis
-                  domain={[80, 100]}
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  unit="%"
-                />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: '#1E293B',
-                    borderColor: '#334155',
-                    color: '#F8FAFC',
-                    fontSize: '11px',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Bar
-                  dataKey="avgYield"
-                  name="Mean Yield %"
-                  fill="#0284C7"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+        <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 shadow-sm">
+          <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Good Wafers Yielded
+          </span>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            {lotStats.totalGood.toLocaleString()}
           </div>
+          <span className="text-[11px] text-neutral-500 mt-1 block">of {lotStats.totalIn.toLocaleString()} in production</span>
+        </div>
+
+        <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 shadow-sm">
+          <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Scrapped Wafers
+          </span>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            {lotStats.totalScrap.toLocaleString()}
+          </div>
+          <span className="text-[11px] text-neutral-500 mt-1 block">Excursion & defect loss</span>
         </div>
       </div>
 
       {/* Lot Inventory Table */}
-      <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-[#E4E7EC] dark:border-[#1E2D4A] flex justify-between items-center bg-slate-50/50 dark:bg-[#0E1626]">
-          <div>
-            <h2 className="text-sm font-display font-bold text-slate-900 dark:text-white">
-              Wafer Lots in Production & History ({filteredLots.length})
-            </h2>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Click 'Inspect Trace' on any lot to examine the stage-by-stage tool log and yield progression
-            </span>
-          </div>
+      <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex justify-between items-center bg-neutral-50/50 dark:bg-neutral-900/50">
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+            Wafer Lots ({filteredLots.length})
+          </h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#0E1626] border-b border-[#E4E7EC] dark:border-[#1E2D4A] text-slate-500 uppercase text-[10px] font-semibold tracking-wider">
+              <tr className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 uppercase text-[10px] font-semibold tracking-wider">
                 <th className="py-3 px-4">Lot ID</th>
                 <th className="py-3 px-4">Recipe</th>
-                <th className="py-3 px-4">Current / Final Stage</th>
+                <th className="py-3 px-4">Current Stage</th>
                 <th className="py-3 px-4">Last Tool</th>
-                <th className="py-3 px-4 text-right">Wafers In</th>
-                <th className="py-3 px-4 text-right">Good Units</th>
+                <th className="py-3 px-4 text-right">In</th>
+                <th className="py-3 px-4 text-right">Good</th>
                 <th className="py-3 px-4 text-right">Scrap</th>
-                <th className="py-3 px-4 text-right">Yield %</th>
+                <th className="py-3 px-4 text-right">Yield</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Traceability</th>
+                <th className="py-3 px-4 text-center">Inspect</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E4E7EC] dark:divide-[#1E2D4A]">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
               {filteredLots.map((lot) => (
                 <tr
                   key={lot.lotId}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                  className="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors"
                 >
-                  <td className="py-3 px-4 font-bold text-slate-900 dark:text-white font-mono">
+                  <td className="py-3 px-4 font-semibold text-neutral-900 dark:text-white font-mono">
                     {lot.lotId}
                   </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
-                    {lot.recipeId || 'REC-7NM-STD'}
+                  <td className="py-3 px-4 text-neutral-600 dark:text-neutral-400 font-mono text-[11px]">
+                    {lot.recipeId || 'REC-STD'}
                   </td>
-                  <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-medium">
+                  <td className="py-3 px-4 uppercase text-neutral-700 dark:text-neutral-300 font-medium">
                     {lot.currentStage || 'Completed'}
                   </td>
-                  <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-semibold font-mono">
+                  <td className="py-3 px-4 text-neutral-700 dark:text-neutral-300 font-medium font-mono">
                     {lot.lastEquipmentId || 'CMP-01'}
                   </td>
-                  <td className="py-3 px-4 text-right tabular-nums font-mono text-slate-600 dark:text-slate-400">
+                  <td className="py-3 px-4 text-right tabular-nums font-mono text-neutral-600 dark:text-neutral-400">
                     {lot.totalUnits || 25}
                   </td>
                   <td className="py-3 px-4 text-right tabular-nums font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
@@ -312,7 +228,7 @@ export const YieldAnalytics: React.FC = () => {
                   <td className="py-3 px-4 text-right tabular-nums font-mono text-rose-700 dark:text-rose-400 font-semibold">
                     {lot.defectUnits || 2}
                   </td>
-                  <td className="py-3 px-4 text-right tabular-nums font-mono font-bold">
+                  <td className="py-3 px-4 text-right tabular-nums font-mono font-medium">
                     <span
                       className={
                         (lot.yieldPct ?? 92) >= 92
@@ -329,9 +245,9 @@ export const YieldAnalytics: React.FC = () => {
                   <td className="py-3 px-4 text-center">
                     <button
                       onClick={() => handleOpenTraceability(lot.lotId)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-[#E4E7EC] dark:border-[#1E2D4A] bg-white dark:bg-[#18243C] hover:bg-slate-50 dark:hover:bg-slate-700 text-[11px] font-semibold text-[#16324F] dark:text-sky-300 transition-colors shadow-sm"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[11px] font-medium text-neutral-900 dark:text-white transition-colors shadow-sm"
                     >
-                      <span>Inspect Trace</span>
+                      <span>Trace</span>
                       <ArrowRight size={11} />
                     </button>
                   </td>
@@ -344,31 +260,31 @@ export const YieldAnalytics: React.FC = () => {
 
       {/* Traceability Modal */}
       {selectedLot && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#131D31] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col text-xs overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E4E7EC] dark:border-[#1E2D4A] flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col text-xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
               <div>
-                <h3 className="font-display font-bold text-sm text-slate-900 dark:text-white">
-                  Wafer Lot Traceability: {selectedLot.lotId}
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                  Lot Traceability: {selectedLot.lotId}
                 </h3>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Recipe: {selectedLot.recipeId} | Final Yield: {selectedLot.yieldPct?.toFixed(2)}%
+                <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Recipe: {selectedLot.recipeId} | Yield: {selectedLot.yieldPct?.toFixed(2)}%
                 </span>
               </div>
               <button
                 onClick={() => setSelectedLot(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4">
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                Chronological Cleanroom Process Stages
+              <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                Process Stages
               </div>
 
-              <div className="space-y-3 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E4E7EC] dark:before:bg-[#1E2D4A]">
+              <div className="space-y-3 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-neutral-200 dark:before:bg-neutral-800">
                 {(selectedLot.stages || [
                   { stageName: 'Deposition', equipmentId: 'CVD-01', inUnits: 25, goodUnits: 25, scrapUnits: 0, yieldPct: 100 },
                   { stageName: 'Lithography', equipmentId: 'LITHO-01', inUnits: 25, goodUnits: 25, scrapUnits: 0, yieldPct: 100 },
@@ -380,25 +296,25 @@ export const YieldAnalytics: React.FC = () => {
                   return (
                     <div key={idx} className="relative flex items-start gap-3 pl-8">
                       <div
-                        className={`absolute left-2.5 top-2 w-3 h-3 rounded-full border-2 bg-white dark:bg-[#131D31] ${
+                        className={`absolute left-2.5 top-2 w-3 h-3 rounded-full border-2 bg-white dark:bg-neutral-950 ${
                           hasLoss
                             ? 'border-rose-500 bg-rose-50 dark:bg-rose-950'
-                            : 'border-[#16324F] dark:border-sky-400'
+                            : 'border-black dark:border-white'
                         }`}
                       />
-                      <div className="flex-1 bg-slate-50/80 dark:bg-[#0E1626] border border-[#E4E7EC] dark:border-[#1E2D4A] rounded-xl p-3.5">
+                      <div className="flex-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3.5">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-slate-900 dark:text-white">
+                          <span className="font-semibold text-neutral-900 dark:text-white">
                             Stage {idx + 1}: {stage.stageName}
                           </span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300 font-mono">
                             Tool: {stage.equipmentId}
                           </span>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-600 dark:text-slate-400 mt-2">
-                          <div>Wafers In: {stage.inUnits}</div>
-                          <div>Good Out: {stage.goodUnits}</div>
-                          <div className={hasLoss ? 'text-rose-600 dark:text-rose-400 font-bold' : ''}>
+                        <div className="grid grid-cols-3 gap-2 text-[11px] text-neutral-600 dark:text-neutral-400 mt-2">
+                          <div>In: {stage.inUnits}</div>
+                          <div>Good: {stage.goodUnits}</div>
+                          <div className={hasLoss ? 'text-rose-600 dark:text-rose-400 font-semibold' : ''}>
                             Scrap: {stage.scrapUnits} ({stage.yieldPct?.toFixed(1)}%)
                           </div>
                         </div>
@@ -409,17 +325,23 @@ export const YieldAnalytics: React.FC = () => {
               </div>
             </div>
 
-            <div className="px-6 py-3 border-t border-[#E4E7EC] dark:border-[#1E2D4A] bg-slate-50 dark:bg-[#0E1626] flex justify-end">
+            <div className="px-6 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-end">
               <button
                 onClick={() => setSelectedLot(null)}
-                className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 font-semibold text-xs transition-colors"
+                className="px-4 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black font-medium text-xs transition-colors"
               >
-                Close Trace
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <UploadDataModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onSuccess={fetchYieldData}
+      />
     </div>
   );
 };
