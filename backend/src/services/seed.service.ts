@@ -29,6 +29,12 @@ export async function ensureDefaultDemoData(): Promise<{
       password: 'DemoPassword2026!',
       fullName: 'Fab Process Engineer',
       role: 'owner' as const
+    },
+    {
+      email: 'sudharsudhar2234@gmail.com',
+      password: 'Sudharshan@2007',
+      fullName: 'Sudharshan',
+      role: 'owner' as const
     }
   ];
 

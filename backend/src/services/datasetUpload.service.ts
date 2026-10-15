@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import csvParser from 'csv-parser';
 import * as xlsx from 'xlsx';
+import AdmZip from 'adm-zip';
 import { AppError } from '../errors/AppError.js';
 import { ICapabilityMatrix, ICapabilityStatus } from '../models/Dataset.js';
 import { datasetRepository, DatasetEntity } from '../repositories/dataset.repository.js';
@@ -78,13 +79,13 @@ export interface ProfilingResult {
 
 export class DatasetUploadService {
   // 1. Magic byte verification
-  validateFileMagic(filePath: string, originalName: string): 'csv' | 'xlsx' {
+  validateFileMagic(filePath: string, originalName: string): 'csv' | 'xlsx' | 'zip' {
     const ext = path.extname(originalName).toLowerCase();
     if (ext === '.xlsm') {
       throw AppError.badRequest('Macro-enabled workbooks (.xlsm) are strictly rejected for security.');
     }
-    if (ext !== '.csv' && ext !== '.xlsx') {
-      throw AppError.badRequest('Invalid file extension. Only .csv and .xlsx files are supported.');
+    if (ext !== '.csv' && ext !== '.xlsx' && ext !== '.zip') {
+      throw AppError.badRequest('Invalid file extension. Only .csv, .xlsx, and .zip files are supported.');
     }
 
     const buffer = Buffer.alloc(8);
@@ -98,6 +99,14 @@ export class DatasetUploadService {
         return 'xlsx';
       }
       throw AppError.badRequest('Corrupted or spoofed Excel file header.');
+    }
+
+    if (ext === '.zip') {
+      // PK header bytes: 50 4B
+      if (buffer[0] === 0x50 && buffer[1] === 0x4b) {
+        return 'zip';
+      }
+      throw AppError.badRequest('Corrupted or invalid ZIP archive.');
     }
 
     // CSV text check: ensures no binary executable or zip headers
@@ -177,6 +186,61 @@ export class DatasetUploadService {
     } catch (err: any) {
       if (err instanceof AppError) throw err;
       throw AppError.badRequest(`Excel parsing failed: ${err.message}`);
+    }
+  }
+
+  // 4b. Extract tabular dataset from ZIP archive
+  async extractZipDataset(zipFilePath: string): Promise<{ rows: Record<string, any>[]; innerFilename: string }> {
+    let zip: AdmZip;
+    try {
+      zip = new AdmZip(zipFilePath);
+    } catch (err: any) {
+      throw AppError.badRequest(`Failed to read ZIP archive: ${err.message}`);
+    }
+
+    const entries = zip.getEntries();
+    // Filter for safe candidate files (not directory, not OS metadata, not hidden)
+    const validEntries = entries.filter((entry) => {
+      if (entry.isDirectory) return false;
+      const entryName = entry.entryName;
+      if (entryName.startsWith('__MACOSX') || path.basename(entryName).startsWith('.')) return false;
+      const lower = entryName.toLowerCase();
+      // Block executable or script files inside zip
+      if (
+        lower.endsWith('.exe') ||
+        lower.endsWith('.bat') ||
+        lower.endsWith('.cmd') ||
+        lower.endsWith('.sh') ||
+        lower.endsWith('.xlsm')
+      ) {
+        throw AppError.badRequest(`Security violation: Suspicious file ${entryName} detected inside ZIP archive.`);
+      }
+      return lower.endsWith('.csv') || lower.endsWith('.xlsx');
+    });
+
+    if (validEntries.length === 0) {
+      throw AppError.badRequest('ZIP archive must contain at least one valid .csv or .xlsx cleanroom dataset.');
+    }
+
+    // Pick the first cleanroom telemetry file found
+    const chosenEntry = validEntries[0];
+    const innerName = path.basename(chosenEntry.entryName);
+    const isCsv = chosenEntry.entryName.toLowerCase().endsWith('.csv');
+
+    // Create a temporary file to parse
+    const tempDir = path.dirname(zipFilePath);
+    const tempFilePath = path.join(tempDir, `extracted_${Date.now()}_${innerName}`);
+
+    try {
+      fs.writeFileSync(tempFilePath, chosenEntry.getData());
+      const rows = isCsv ? await this.parseCsv(tempFilePath) : this.parseExcel(tempFilePath);
+      return { rows, innerFilename: innerName };
+    } finally {
+      if (fs.existsSync(tempFilePath)) {
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (_) {}
+      }
     }
   }
 
@@ -441,9 +505,18 @@ export class DatasetUploadService {
     const format = this.validateFileMagic(file.path, file.originalname);
 
     // Parse rows safely
-    const rows = format === 'csv'
-      ? await this.parseCsv(file.path)
-      : this.parseExcel(file.path);
+    let rows: Record<string, any>[] = [];
+    let innerDatasetName = file.originalname;
+
+    if (format === 'csv') {
+      rows = await this.parseCsv(file.path);
+    } else if (format === 'xlsx') {
+      rows = this.parseExcel(file.path);
+    } else if (format === 'zip') {
+      const extracted = await this.extractZipDataset(file.path);
+      rows = extracted.rows;
+      innerDatasetName = `${file.originalname} (${extracted.innerFilename})`;
+    }
 
     // Profile data
     const profiling = this.profileData(rows);
@@ -462,7 +535,7 @@ export class DatasetUploadService {
     // Persist dataset metadata
     const dataset = await datasetRepository.create(workspaceId, {
       workspaceId,
-      name: datasetName.trim() || file.originalname,
+      name: datasetName.trim() || innerDatasetName,
       sourceType: 'uploaded',
       storedFilename: path.basename(file.path),
       originalFilename: file.originalname,

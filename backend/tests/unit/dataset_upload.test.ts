@@ -139,4 +139,22 @@ describe('Stage 2: Dataset Upload, Profiling, Mapping & Capability Checks', () =
     expect(capability.predictiveMaintenance.status).toBe('available');
     expect(capability.lotTraceability.status).toBe('available');
   });
+
+  it('validates and extracts valid CSV telemetry from a ZIP archive', async () => {
+    const AdmZipModule = (await import('adm-zip')).default;
+    const zip = new AdmZipModule();
+    const csvContent = 'timestamp,equipment_id,temperature,pressure\n2026-10-14T10:00:00Z,CMP-01,42.5,120.3\n';
+    zip.addFile('cleanroom_data.csv', Buffer.from(csvContent, 'utf8'));
+    const zipPath = path.join(tempDir, 'telemetry.zip');
+    zip.writeZip(zipPath);
+
+    const format = datasetUploadService.validateFileMagic(zipPath, 'telemetry.zip');
+    expect(format).toBe('zip');
+
+    const result = await datasetUploadService.extractZipDataset(zipPath);
+    expect(result.innerFilename).toBe('cleanroom_data.csv');
+    expect(result.rows.length).toBe(1);
+    expect(result.rows[0].equipment_id).toBe('CMP-01');
+    expect(result.rows[0].temperature).toBe('42.5');
+  });
 });

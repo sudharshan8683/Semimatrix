@@ -39,8 +39,8 @@ const upload = multer({
     if (ext === '.xlsm') {
       return cb(AppError.badRequest('Macro-enabled workbooks (.xlsm) are rejected for security.'));
     }
-    if (ext !== '.csv' && ext !== '.xlsx') {
-      return cb(AppError.badRequest('Invalid file type. Only .csv and .xlsx files are accepted.'));
+    if (ext !== '.csv' && ext !== '.xlsx' && ext !== '.zip') {
+      return cb(AppError.badRequest('Invalid file type. Only .csv, .xlsx, and .zip files are accepted.'));
     }
     cb(null, true);
   }

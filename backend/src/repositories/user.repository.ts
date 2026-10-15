@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { UserModel, UserRole } from '../models/User.js';
 import { BaseEntity, InMemoryStore } from './base.repository.js';
 import mongoose from 'mongoose';
@@ -14,6 +16,32 @@ export interface UserEntity extends BaseEntity {
 export class UserRepository {
   private store = InMemoryStore.getInstance();
   private collectionName = 'users';
+  private persistPath = path.resolve(process.cwd(), 'uploads', 'users_store.json');
+
+  private loadPersistedUsers() {
+    try {
+      if (fs.existsSync(this.persistPath)) {
+        const raw = fs.readFileSync(this.persistPath, 'utf-8');
+        const list: UserEntity[] = JSON.parse(raw);
+        const col = this.store.getCollection(this.collectionName);
+        for (const u of list) {
+          if (!col.has(u._id)) {
+            col.set(u._id, u);
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  private savePersistedUsers() {
+    try {
+      const dir = path.dirname(this.persistPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const col = this.store.getCollection(this.collectionName);
+      const list = Array.from(col.values());
+      fs.writeFileSync(this.persistPath, JSON.stringify(list, null, 2), 'utf-8');
+    } catch (_) {}
+  }
 
   private isMongooseActive(): boolean {
     return mongoose.connection.readyState === 1;
@@ -24,6 +52,7 @@ export class UserRepository {
     if (this.isMongooseActive()) {
       return (await UserModel.findOne({ email: normalized }))?.toObject() ?? null;
     }
+    this.loadPersistedUsers();
     const col = this.store.getCollection(this.collectionName);
     for (const user of col.values()) {
       if ((user as UserEntity).email === normalized) {
@@ -37,6 +66,7 @@ export class UserRepository {
     if (this.isMongooseActive()) {
       return (await UserModel.findById(id))?.toObject() ?? null;
     }
+    this.loadPersistedUsers();
     return (this.store.getCollection(this.collectionName).get(id) as UserEntity) ?? null;
   }
 
@@ -56,6 +86,7 @@ export class UserRepository {
     }
 
     this.store.getCollection(this.collectionName).set(id, doc);
+    this.savePersistedUsers();
     return { ...doc };
   }
 

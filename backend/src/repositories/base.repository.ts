@@ -8,6 +8,9 @@ export interface BaseEntity {
   [key: string]: any;
 }
 
+import fs from 'fs';
+import path from 'path';
+
 export class InMemoryStore {
   private static instance: InMemoryStore;
   private collections: Map<string, Map<string, BaseEntity>> = new Map();
@@ -21,11 +24,37 @@ export class InMemoryStore {
     return InMemoryStore.instance;
   }
 
+  private getStoreFilePath(name: string): string {
+    return path.resolve(process.cwd(), 'uploads', `.store_${name}.json`);
+  }
+
   public getCollection(name: string): Map<string, BaseEntity> {
     if (!this.collections.has(name)) {
-      this.collections.set(name, new Map());
+      const colMap = new Map<string, BaseEntity>();
+      try {
+        const filePath = this.getStoreFilePath(name);
+        if (fs.existsSync(filePath)) {
+          const raw = fs.readFileSync(filePath, 'utf-8');
+          const list: BaseEntity[] = JSON.parse(raw);
+          for (const item of list) {
+            colMap.set(item._id, item);
+          }
+        }
+      } catch (_) {}
+      this.collections.set(name, colMap);
     }
     return this.collections.get(name)!;
+  }
+
+  public persistCollection(name: string): void {
+    try {
+      const col = this.getCollection(name);
+      const filePath = this.getStoreFilePath(name);
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const list = Array.from(col.values());
+      fs.writeFileSync(filePath, JSON.stringify(list, null, 2), 'utf-8');
+    } catch (_) {}
   }
 
   public clearAll(): void {
@@ -122,6 +151,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 
     const col = this.store.getCollection(this.collectionName);
     col.set(id, docData);
+    this.store.persistCollection(this.collectionName);
     return { ...docData } as T;
   }
 
@@ -146,6 +176,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
       updatedAt: new Date()
     };
     col.set(id, updated);
+    this.store.persistCollection(this.collectionName);
     return { ...updated } as T;
   }
 
@@ -159,7 +190,9 @@ export abstract class BaseRepository<T extends BaseEntity> {
     const col = this.store.getCollection(this.collectionName);
     const existing = col.get(id);
     if (!existing || existing.workspaceId !== workspaceId) return false;
-    return col.delete(id);
+    const deleted = col.delete(id);
+    this.store.persistCollection(this.collectionName);
+    return deleted;
   }
 
   // Delete all records belonging to a workspace (for delete-my-data compliance)
@@ -176,6 +209,9 @@ export abstract class BaseRepository<T extends BaseEntity> {
         col.delete(id);
         count++;
       }
+    }
+    if (count > 0) {
+      this.store.persistCollection(this.collectionName);
     }
     return count;
   }

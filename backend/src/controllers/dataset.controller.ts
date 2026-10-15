@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { Request, Response, NextFunction } from 'express';
 import { datasetUploadService } from '../services/datasetUpload.service.js';
 import { datasetRepository } from '../repositories/dataset.repository.js';
@@ -12,7 +14,7 @@ export class DatasetController {
       const file = req.file;
 
       if (!file) {
-        throw AppError.badRequest('No file uploaded. Please upload a .csv or .xlsx file.');
+        throw AppError.badRequest('No file uploaded. Please upload a .csv, .xlsx, or .zip file.');
       }
 
       const datasetName = (req.body.name as string) || file.originalname;
