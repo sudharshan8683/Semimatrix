@@ -19,7 +19,7 @@ export class InvestigationController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const investigation = await investigationService.getById(workspaceId, id);
       if (!investigation) {

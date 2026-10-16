@@ -63,7 +63,7 @@ export class SensorRepository extends BaseRepository<SensorReadingEntity> {
         .sort({ timestamp: -1 })
         .limit(limit)
         .exec();
-      return docs.map((d) => d.toObject() as SensorReadingEntity).reverse();
+      return docs.map((d) => d.toObject() as unknown as SensorReadingEntity).reverse();
     }
 
     const col = this.store.getCollection(this.collectionName);

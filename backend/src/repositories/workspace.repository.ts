@@ -46,7 +46,7 @@ export class WorkspaceRepository {
 
   async findById(id: string): Promise<WorkspaceEntity | null> {
     if (this.isMongooseActive()) {
-      return (await WorkspaceModel.findById(id))?.toObject() ?? null;
+      return ((await WorkspaceModel.findById(id))?.toObject() as unknown as WorkspaceEntity) ?? null;
     }
     this.loadPersistedWorkspaces();
     return (this.store.getCollection(this.collectionName).get(id) as WorkspaceEntity) ?? null;
@@ -65,7 +65,7 @@ export class WorkspaceRepository {
 
     if (this.isMongooseActive()) {
       const created = await WorkspaceModel.create(doc);
-      return created.toObject() as WorkspaceEntity;
+      return created.toObject() as unknown as WorkspaceEntity;
     }
 
     this.store.getCollection(this.collectionName).set(id, doc);

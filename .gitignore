@@ -44,9 +44,10 @@ yarn-error.log*
 *.tsbuildinfo
 
 # Uploads and temporary test files
-backend/uploads/*.zip
-backend/uploads/*.csv
-backend/uploads/*.json
-backend/uploads/.*.json
+uploads/
+**/uploads/*.zip
+**/uploads/*.csv
+**/uploads/*.json
+**/uploads/.*.json
 tests_temp/
 backend/tests/**/*.js

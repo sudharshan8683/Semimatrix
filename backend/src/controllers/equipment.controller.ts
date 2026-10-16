@@ -51,7 +51,7 @@ export class EquipmentController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       // Allow lookup by Mongo _id OR tool equipmentId (e.g. CVD-01)
       let tool = await equipmentRepository.findById(workspaceId, id);
@@ -82,7 +82,7 @@ export class EquipmentController {
   async getTelemetry(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
       const limit = req.query.limit ? Number(req.query.limit) : 50;
       const startTime = req.query.startTime ? new Date(req.query.startTime as string) : undefined;
       const endTime = req.query.endTime ? new Date(req.query.endTime as string) : undefined;
@@ -118,7 +118,7 @@ export class EquipmentController {
   async getSpcAnalysis(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
       const paramName = req.query.parameter as string;
       const baselineCount = req.query.baselineCount ? Number(req.query.baselineCount) : undefined;
 

@@ -28,7 +28,7 @@ export class AlertController {
   async acknowledge(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const alert = await alertRepository.findById(workspaceId, id);
       if (!alert) {
@@ -60,7 +60,7 @@ export class AlertController {
   async resolve(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
       const { notes } = req.body;
 
       const alert = await alertRepository.findById(workspaceId, id);

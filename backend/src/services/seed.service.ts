@@ -45,7 +45,7 @@ export async function ensureDefaultDemoData(): Promise<{
     workspaceId = existingUser.workspaceId;
   } else {
     const ws = await workspaceRepository.create('Semimatrix Cleanroom 300mm Fab');
-    workspaceId = typeof ws._id === 'string' ? ws._id : ws._id.toString();
+    workspaceId = String(ws._id);
   }
 
   // 2. Ensure each default user exists

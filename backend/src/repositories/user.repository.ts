@@ -50,7 +50,7 @@ export class UserRepository {
   async findByEmail(email: string): Promise<UserEntity | null> {
     const normalized = email.toLowerCase().trim();
     if (this.isMongooseActive()) {
-      return (await UserModel.findOne({ email: normalized }))?.toObject() ?? null;
+      return ((await UserModel.findOne({ email: normalized }))?.toObject() as unknown as UserEntity) ?? null;
     }
     this.loadPersistedUsers();
     const col = this.store.getCollection(this.collectionName);
@@ -64,7 +64,7 @@ export class UserRepository {
 
   async findById(id: string): Promise<UserEntity | null> {
     if (this.isMongooseActive()) {
-      return (await UserModel.findById(id))?.toObject() ?? null;
+      return ((await UserModel.findById(id))?.toObject() as unknown as UserEntity) ?? null;
     }
     this.loadPersistedUsers();
     return (this.store.getCollection(this.collectionName).get(id) as UserEntity) ?? null;
@@ -73,7 +73,11 @@ export class UserRepository {
   async create(data: Omit<UserEntity, '_id' | 'createdAt' | 'updatedAt'>): Promise<UserEntity> {
     const id = new mongoose.Types.ObjectId().toHexString();
     const doc: UserEntity = {
-      ...data,
+      passwordHash: data.passwordHash,
+      fullName: data.fullName,
+      role: data.role,
+      workspaceId: data.workspaceId,
+      lastLoginAt: data.lastLoginAt,
       email: data.email.toLowerCase().trim(),
       _id: id,
       createdAt: new Date(),
@@ -82,7 +86,7 @@ export class UserRepository {
 
     if (this.isMongooseActive()) {
       const created = await UserModel.create(doc);
-      return created.toObject() as UserEntity;
+      return created.toObject() as unknown as UserEntity;
     }
 
     this.store.getCollection(this.collectionName).set(id, doc);

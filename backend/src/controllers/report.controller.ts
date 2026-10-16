@@ -19,7 +19,7 @@ export class ReportController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const report = await reportService.getById(workspaceId, id);
       if (!report) {
@@ -66,7 +66,7 @@ export class ReportController {
   async exportCsv(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const csvContent = await reportService.exportToCsv(workspaceId, id);
 

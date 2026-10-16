@@ -26,7 +26,7 @@ export class LotController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const lot = await yieldService.getLotTraceability(workspaceId, id);
       if (!lot) {

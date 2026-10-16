@@ -58,7 +58,7 @@ export class DatasetController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const dataset = await datasetRepository.findById(workspaceId, id);
       if (!dataset) {
@@ -77,7 +77,7 @@ export class DatasetController {
   async updateMapping(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
       const { mapping } = req.body;
 
       if (!mapping || typeof mapping !== 'object') {
@@ -166,7 +166,7 @@ export class DatasetController {
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = req.workspaceId!;
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const dataset = await datasetRepository.findById(workspaceId, id);
       if (!dataset) {
