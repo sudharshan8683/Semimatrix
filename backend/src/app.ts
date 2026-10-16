@@ -29,7 +29,7 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*') || env.NODE_ENV !== 'production') {
           callback(null, true);
         } else {
           callback(new AppError(403, 'FORBIDDEN', `CORS origin ${origin} not permitted`));
