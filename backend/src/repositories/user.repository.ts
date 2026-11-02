@@ -19,6 +19,7 @@ export class UserRepository {
   private persistPath = path.resolve(process.cwd(), 'uploads', 'users_store.json');
 
   private loadPersistedUsers() {
+    if (process.env.NODE_ENV === 'test') return;
     try {
       if (fs.existsSync(this.persistPath)) {
         const raw = fs.readFileSync(this.persistPath, 'utf-8');
@@ -34,6 +35,7 @@ export class UserRepository {
   }
 
   private savePersistedUsers() {
+    if (process.env.NODE_ENV === 'test') return;
     try {
       const dir = path.dirname(this.persistPath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

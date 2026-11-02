@@ -32,12 +32,14 @@ export class InMemoryStore {
     if (!this.collections.has(name)) {
       const colMap = new Map<string, BaseEntity>();
       try {
-        const filePath = this.getStoreFilePath(name);
-        if (fs.existsSync(filePath)) {
-          const raw = fs.readFileSync(filePath, 'utf-8');
-          const list: BaseEntity[] = JSON.parse(raw);
-          for (const item of list) {
-            colMap.set(item._id, item);
+        if (process.env.NODE_ENV !== 'test') {
+          const filePath = this.getStoreFilePath(name);
+          if (fs.existsSync(filePath)) {
+            const raw = fs.readFileSync(filePath, 'utf-8');
+            const list: BaseEntity[] = JSON.parse(raw);
+            for (const item of list) {
+              colMap.set(item._id, item);
+            }
           }
         }
       } catch (_) {}
@@ -47,6 +49,7 @@ export class InMemoryStore {
   }
 
   public persistCollection(name: string): void {
+    if (process.env.NODE_ENV === 'test') return;
     try {
       const col = this.getCollection(name);
       const filePath = this.getStoreFilePath(name);

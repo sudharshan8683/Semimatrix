@@ -1,4 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
+import path from 'path';
+import fs from 'fs';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -87,7 +89,25 @@ export function createApp() {
   mountRoutes('/api/v1');
   mountRoutes('/api');
 
-  // 8. Catch 404 Route Not Found
+  // 8. Static Frontend Serving (When dist is available for single-service deployment)
+  const candidateDirs = [
+    path.resolve(process.cwd(), '../frontend/dist'),
+    path.resolve(process.cwd(), 'public'),
+    path.resolve(process.cwd(), 'dist/public')
+  ];
+  const staticDir = candidateDirs.find((dir) => fs.existsSync(dir));
+
+  if (staticDir) {
+    app.use(express.static(staticDir));
+    app.get('*', (req: Request, res: Response, next: NextFunction) => {
+      if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/health')) {
+        return next();
+      }
+      res.sendFile(path.join(staticDir, 'index.html'));
+    });
+  }
+
+  // 9. Catch 404 Route Not Found
   app.use((req: Request, res: Response, next: NextFunction) => {
     next(new AppError(404, 'NOT_FOUND', `Cannot ${req.method} ${req.originalUrl}`));
   });

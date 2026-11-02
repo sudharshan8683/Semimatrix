@@ -16,6 +16,7 @@ export class WorkspaceRepository {
   private persistPath = path.resolve(process.cwd(), 'uploads', 'workspaces_store.json');
 
   private loadPersistedWorkspaces() {
+    if (process.env.NODE_ENV === 'test') return;
     try {
       if (fs.existsSync(this.persistPath)) {
         const raw = fs.readFileSync(this.persistPath, 'utf-8');
@@ -31,6 +32,7 @@ export class WorkspaceRepository {
   }
 
   private savePersistedWorkspaces() {
+    if (process.env.NODE_ENV === 'test') return;
     try {
       const dir = path.dirname(this.persistPath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
