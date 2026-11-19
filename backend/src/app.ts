@@ -63,7 +63,13 @@ export function createApp() {
     );
   }
 
-  // 6. System Health Check
+  // 6. Root redirect → Frontend
+  app.get('/', (req: Request, res: Response) => {
+    const frontendUrl = env.FRONTEND_URL || 'https://semimatrix.vercel.app';
+    res.redirect(301, frontendUrl);
+  });
+
+  // 6b. System Health Check
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
