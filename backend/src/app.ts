@@ -23,6 +23,9 @@ import { reportRouter } from './routes/report.routes.js';
 export function createApp() {
   const app = express();
 
+  // 0. Trust Render/Cloudflare proxy (required for rate-limiter X-Forwarded-For)
+  app.set('trust proxy', 1);
+
   // 1. Security Headers
   app.use(helmet());
 
